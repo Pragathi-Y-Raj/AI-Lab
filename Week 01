@@ -1,0 +1,287 @@
+1.Implement a vacuum cleaner agent.
+
+def vacuum_world():
+    # Initializing goal_state
+    # 0 indicates Clean and 1 indicates Dirty
+    goal_state = {'A': '0', 'B': '0'}
+    cost = 0
+
+    # User input for vacuum location
+    location_input = input("Enter Location of Vacuum (A or B): ").upper()
+
+    # Status of the room where vacuum is located
+    status_input = input(f"Enter status of {location_input} (0 for Clean, 1 for Dirty): ")
+
+    # Status of the other room
+    other_location = 'B' if location_input == 'A' else 'A'
+    status_input_complement = input(f"Enter status of {other_location} (0 for Clean, 1 for Dirty): ")
+
+    print("\nInitial Location Condition:")
+    print(f"A: {'Dirty' if status_input == '1' and location_input == 'A' or status_input_complement == '1' and location_input == 'B' else 'Clean'}")
+    print(f"B: {'Dirty' if status_input == '1' and location_input == 'B' or status_input_complement == '1' and location_input == 'A' else 'Clean'}\n")
+
+    # Logic for vacuum operation
+    if location_input == 'A':
+        print("Vacuum is placed in Location A.")
+
+        if status_input == '1':
+            print("Location A is Dirty.")
+            goal_state['A'] = '0'
+            cost += 1
+            print("Sucking dirt... Location A has been cleaned.")
+        else:
+            print("Location A is already clean.")
+
+        if status_input_complement == '1':
+            print("Location B is Dirty.")
+            print("Moving RIGHT to Location B.")
+            cost += 1
+            goal_state['B'] = '0'
+            cost += 1
+            print("Sucking dirt... Location B has been cleaned.")
+        else:
+            print("Location B is already clean. No action needed.")
+
+    elif location_input == 'B':
+        print("Vacuum is placed in Location B.")
+
+        if status_input == '1':
+            print("Location B is Dirty.")
+            goal_state['B'] = '0'
+            cost += 1
+            print("Sucking dirt... Location B has been cleaned.")
+        else:
+            print("Location B is already clean.")
+
+        if status_input_complement == '1':
+            print("Location A is Dirty.")
+            print("Moving LEFT to Location A.")
+            cost += 1
+            goal_state['A'] = '0'
+            cost += 1
+            print("Sucking dirt... Location A has been cleaned.")
+        else:
+            print("Location A is already clean. No action needed.")
+    else:
+        print("Invalid location input. Please enter A or B.")
+        return
+
+    # Final result
+    print("\nGOAL STATE: ", goal_state)
+    print("Performance Measurement (Total cost):", cost)
+
+# Run the program
+vacuum_world()
+
+
+Output
+Enter Location of Vacuum (A or B): A
+Enter status of A (0 for Clean, 1 for Dirty): 1
+Enter status of B (0 for Clean, 1 for Dirty): 1
+
+Initial Location Condition:
+A: Dirty
+B: Dirty
+
+Vacuum is placed in Location A.
+Location A is Dirty.
+Sucking dirt... Location A has been cleaned.
+Location B is Dirty.
+Moving RIGHT to Location B.
+Sucking dirt... Location B has been cleaned.
+
+GOAL STATE:  {'A': '0', 'B': '0'}
+Performance Measurement (Total cost): 3
+
+
+
+
+2.TICTACTOE
+board = {
+    1: ' ', 2: ' ', 3: ' ',
+    4: ' ', 5: ' ', 6: ' ',
+    7: ' ', 8: ' ', 9: ' '
+}
+
+player = 'O'
+bot = 'X'
+
+def printBoard(board):
+    print(board[1] + '|' + board[2] + '|' + board[3])
+    print('-+-+-')
+    print(board[4] + '|' + board[5] + '|' + board[6])
+    print('-+-+-')
+    print(board[7] + '|' + board[8] + '|' + board[9])
+    print('\n')
+
+def spaceFree(pos):
+    return board[pos] == ' '
+
+def checkWin(move):
+    win_conditions = [
+        (1, 2, 3), (4, 5, 6), (7, 8, 9),  # Rows
+        (1, 4, 7), (2, 5, 8), (3, 6, 9),  # Columns
+        (1, 5, 9), (3, 5, 7)              # Diagonals
+    ]
+    for a, b, c in win_conditions:
+        if board[a] == board[b] == board[c] == move:
+            return True
+    return False
+
+def checkDraw():
+    return all(board[key] != ' ' for key in board)
+
+def insertLetter(letter, position):
+    if spaceFree(position):
+        board[position] = letter
+        printBoard(board)
+
+        if checkWin(letter):
+            if letter == bot:
+                print("Bot wins!")
+            else:
+                print("You win!")
+            return True  # Game over
+        elif checkDraw():
+            print("It's a draw!")
+            return True  # Game over
+        return False  # Continue playing
+    else:
+        print('Position taken, please pick a different position.')
+        position = int(input('Enter new position: '))
+        return insertLetter(letter, position)
+
+def playerMove():
+    while True:
+        try:
+            position = int(input('Enter position for O (1-9): '))
+            if position in board:
+                return insertLetter(player, position)
+            else:
+                print("Invalid input. Choose a number between 1 and 9.")
+        except ValueError:
+            print("Please enter a valid number.")
+
+def compMove():
+    bestScore = -1000
+    bestMove = 0
+
+    for key in board.keys():
+        if board[key] == ' ':
+            board[key] = bot
+            score = minimax(board, 0, False)
+            board[key] = ' '
+            if score > bestScore:
+                bestScore = score
+                bestMove = key
+
+    print(f"Bot chooses position {bestMove}")
+    return insertLetter(bot, bestMove)
+
+def minimax(board, depth, isMaximizing):
+    if checkWin(bot):
+        return 1
+    elif checkWin(player):
+        return -1
+    elif checkDraw():
+        return 0
+
+    if isMaximizing:
+        bestScore = -1000
+        for key in board:
+            if board[key] == ' ':
+                board[key] = bot
+                score = minimax(board, depth + 1, False)
+                board[key] = ' '
+                bestScore = max(score, bestScore)
+        return bestScore
+    else:
+        bestScore = 1000
+        for key in board:
+            if board[key] == ' ':
+                board[key] = player
+                score = minimax(board, depth + 1, True)
+                board[key] = ' '
+                bestScore = min(score, bestScore)
+        return bestScore
+
+# Game loop
+print("Welcome to Tic Tac Toe!")
+printBoard(board)
+
+while True:
+    if compMove():
+        break
+    if playerMove():
+        break
+
+output
+
+Welcome to Tic Tac Toe!
+ | | 
+-+-+-
+ | | 
+-+-+-
+ | | 
+
+
+Bot chooses position 1
+X| | 
+-+-+-
+ | | 
+-+-+-
+ | | 
+
+
+Enter position for O (1-9): 2
+X|O| 
+-+-+-
+ | | 
+-+-+-
+ | | 
+
+
+Bot chooses position 4
+X|O| 
+-+-+-
+X| | 
+-+-+-
+ | | 
+
+
+Enter position for O (1-9): 4
+Position taken, please pick a different position.
+Enter new position: 6
+X|O| 
+-+-+-
+X| |O
+-+-+-
+ | | 
+
+
+Bot chooses position 5
+X|O| 
+-+-+-
+X|X|O
+-+-+-
+ | | 
+
+
+Enter position for O (1-9): 9
+X|O| 
+-+-+-
+X|X|O
+-+-+-
+ | |O
+
+
+Bot chooses position 7
+X|O| 
+-+-+-
+X|X|O
+-+-+-
+X| |O
+
+
+Bot wins!
+
