@@ -70,3 +70,12 @@ if __name__ == "__main__":
     solution = hill_climbing(N)
     if solution:
         print_board(solution)
+
+
+output
+Enter number of queens (N): 4
+Solution found after 1 restarts:
+. Q . . 
+. . . Q 
+Q . . . 
+. . Q . 
